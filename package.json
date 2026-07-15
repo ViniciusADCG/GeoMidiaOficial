@@ -1,0 +1,16 @@
+{
+  "name": "geomidia",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "type-check": "npm --prefix frontend run type-check",
+    "api": "uvicorn app.main:app --reload --app-dir backend"
+  }
+}
