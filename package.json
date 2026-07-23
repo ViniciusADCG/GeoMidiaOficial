@@ -11,6 +11,7 @@
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "type-check": "npm --prefix frontend run type-check",
+    "test": "npm --prefix frontend test",
     "api": "uvicorn app.main:app --reload --app-dir backend"
   }
 }

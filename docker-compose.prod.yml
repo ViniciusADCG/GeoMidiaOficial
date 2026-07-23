@@ -1,0 +1,14 @@
+services:
+  db:
+    ports: !reset []
+    restart: unless-stopped
+
+  api:
+    ports: !reset []
+    environment:
+      ENVIRONMENT: production
+      CREATE_TABLES: "false"
+    restart: unless-stopped
+
+  frontend:
+    restart: unless-stopped

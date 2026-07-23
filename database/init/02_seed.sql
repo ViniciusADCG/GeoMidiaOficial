@@ -113,3 +113,7 @@ SELECT id, process_code, 'cadastro', 'Carga inicial do processo ' || process_cod
 FROM media_assets
 WHERE process_code IN ('PROC-2026-101', 'PROC-2026-102', 'PROC-2026-103', 'PROC-2026-104', 'PROC-2026-105')
 ON CONFLICT DO NOTHING;
+
+INSERT INTO process_counters (year, last_value)
+VALUES (2026, 105)
+ON CONFLICT (year) DO UPDATE SET last_value = GREATEST(process_counters.last_value, EXCLUDED.last_value);
