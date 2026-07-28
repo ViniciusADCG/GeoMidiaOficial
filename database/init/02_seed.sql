@@ -1,3 +1,19 @@
+INSERT INTO media_rules (
+  media_type,
+  name,
+  base_radius_meters,
+  area_threshold_m2,
+  radius_above_threshold_meters,
+  description
+) VALUES
+  ('outdoor', 'Outdoor', 80, NULL, NULL, 'Distancia minima para veiculos do tipo outdoor.'),
+  ('front light', 'Front Light', 80, NULL, NULL, 'Distancia minima para veiculos front light.'),
+  ('triface', 'Triface', 80, NULL, NULL, 'Distancia minima para veiculos triface.'),
+  ('painel de led', 'Painel de LED', 250, 5, 1000, 'Acima de 5 m2 aplica-se o raio ampliado.'),
+  ('empena', 'Empena', 80, NULL, NULL, 'Distancia minima para empenas.'),
+  ('empena de led', 'Empena de LED', 1000, NULL, NULL, 'Distancia minima para empenas de LED.')
+ON CONFLICT (media_type) DO NOTHING;
+
 INSERT INTO media_assets (
   process_code,
   media_type,
@@ -28,7 +44,7 @@ INSERT INTO media_assets (
     5,
     NULL,
     80,
-    'Aprovado',
+    'aprovado',
     'Atende as distancias regulamentares da Avenida Afonso Pena.',
     'Lucia Pereira',
     'lucia@outdoormidia.com.br',
@@ -46,7 +62,7 @@ INSERT INTO media_assets (
     7,
     NULL,
     1000,
-    'Aprovado',
+    'aprovado',
     'Grande porte de LED aprovado em via de trafego rapido.',
     'Fernando Silva',
     'fernando@ledtech.com.br',
@@ -64,7 +80,7 @@ INSERT INTO media_assets (
     6,
     12,
     80,
-    'Pendente',
+    'análise',
     NULL,
     'Roberto Santos',
     'roberto@propaganda.com.br',
@@ -82,7 +98,7 @@ INSERT INTO media_assets (
     15,
     NULL,
     1000,
-    'Pendente',
+    'exigência',
     NULL,
     'Amanda Costa',
     'amanda@empenasled.com.br',
@@ -100,7 +116,7 @@ INSERT INTO media_assets (
     6,
     11,
     80,
-    'Reprovado',
+    'irregular',
     'Divergencia: raio de protecao municipal insuficiente.',
     'Marcos Oliveira',
     'marcos@signcomunicacao.com.br',

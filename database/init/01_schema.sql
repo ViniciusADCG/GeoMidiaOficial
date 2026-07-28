@@ -22,6 +22,32 @@ CREATE TABLE IF NOT EXISTS process_counters (
   last_value integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS media_rules (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  media_type varchar(32) NOT NULL UNIQUE,
+  name varchar(120) NOT NULL,
+  base_radius_meters integer NOT NULL,
+  area_threshold_m2 double precision,
+  radius_above_threshold_meters integer,
+  description text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT ck_media_rules_media_type CHECK (
+    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'empena', 'empena de led')
+  ),
+  CONSTRAINT ck_media_rules_base_radius CHECK (base_radius_meters > 0),
+  CONSTRAINT ck_media_rules_area_threshold CHECK (area_threshold_m2 IS NULL OR area_threshold_m2 > 0),
+  CONSTRAINT ck_media_rules_threshold_radius CHECK (
+    radius_above_threshold_meters IS NULL OR radius_above_threshold_meters > 0
+  ),
+  CONSTRAINT ck_media_rules_threshold_pair CHECK (
+    (area_threshold_m2 IS NULL) = (radius_above_threshold_meters IS NULL)
+  )
+);
+
+CREATE INDEX IF NOT EXISTS ix_media_rules_media_type ON media_rules (media_type);
+
 CREATE TABLE IF NOT EXISTS media_assets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   process_code varchar(32) NOT NULL UNIQUE,
@@ -37,8 +63,9 @@ CREATE TABLE IF NOT EXISTS media_assets (
   bottom_height_m double precision NOT NULL,
   top_height_m double precision,
   radius_meters integer NOT NULL,
-  status varchar(16) NOT NULL DEFAULT 'Pendente',
+  status varchar(16) NOT NULL DEFAULT 'análise',
   justification text,
+  attachment_links text,
   contact_name varchar(120),
   contact_email varchar(160),
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -46,7 +73,9 @@ CREATE TABLE IF NOT EXISTS media_assets (
   CONSTRAINT ck_media_assets_media_type CHECK (
     media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'empena', 'empena de led')
   ),
-  CONSTRAINT ck_media_assets_status CHECK (status IN ('Aprovado', 'Reprovado', 'Pendente')),
+  CONSTRAINT ck_media_assets_status CHECK (
+    status IN ('aprovado', 'irregular', 'análise', 'exigência', 'vencido', 'cartografia', 'jurídico', 'vistoria')
+  ),
   CONSTRAINT ck_media_assets_latitude CHECK (latitude BETWEEN -90 AND 90),
   CONSTRAINT ck_media_assets_longitude CHECK (longitude BETWEEN -180 AND 180),
   CONSTRAINT ck_media_assets_area CHECK (area_m2 > 0),
@@ -99,5 +128,11 @@ EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
 CREATE TRIGGER trg_users_updated_at
 BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_media_rules_updated_at ON media_rules;
+CREATE TRIGGER trg_media_rules_updated_at
+BEFORE UPDATE ON media_rules
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
