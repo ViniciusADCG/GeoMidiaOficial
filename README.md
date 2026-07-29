@@ -79,10 +79,11 @@ npm run build
 
 ## Regras territoriais
 
-- Outdoor, front light, triface e empena: raio mínimo de 80 m.
-- Painel de LED: 250 m até 5 m² e 1.000 m acima de 5 m².
-- Empena de LED: raio mínimo de 1.000 m.
-- Painel de LED e empena de LED conflitam entre si abaixo de 500 m.
+- Outdoor, Painel Iluminado - Front Light, Painel Iluminado - Triface e Empena: raio mínimo de 80 m.
+- Painel Eletrônico Modular - Pequeno Porte: 250 m até 5 m² e 1.000 m acima de 5 m².
+- Painel Eletrônico Modular: raio mínimo de 1.000 m.
+- Empena Eletrônica: raio mínimo de 1.000 m.
+- Painel Eletrônico Modular - Pequeno Porte e Empena Eletrônica conflitam entre si abaixo de 500 m.
 - Processos reprovados não participam da análise.
 - Novos processos sempre começam como pendentes.
 

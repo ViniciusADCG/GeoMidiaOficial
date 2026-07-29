@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS media_rules (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT ck_media_rules_media_type CHECK (
-    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'empena', 'empena de led')
+    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'painel eletronico modular', 'empena', 'empena de led')
   ),
   CONSTRAINT ck_media_rules_base_radius CHECK (base_radius_meters > 0),
   CONSTRAINT ck_media_rules_area_threshold CHECK (area_threshold_m2 IS NULL OR area_threshold_m2 > 0),
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS media_assets (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT ck_media_assets_media_type CHECK (
-    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'empena', 'empena de led')
+    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'painel eletronico modular', 'empena', 'empena de led')
   ),
   CONSTRAINT ck_media_assets_status CHECK (
     status IN ('aprovado', 'irregular', 'análise', 'exigência', 'vencido', 'cartografia', 'jurídico', 'vistoria')
@@ -89,6 +89,38 @@ CREATE INDEX IF NOT EXISTS ix_media_assets_media_type ON media_assets (media_typ
 CREATE INDEX IF NOT EXISTS ix_media_assets_status ON media_assets (status);
 CREATE INDEX IF NOT EXISTS ix_media_assets_district ON media_assets (district);
 CREATE INDEX IF NOT EXISTS ix_media_assets_geom ON media_assets USING gist (geom);
+
+CREATE TABLE IF NOT EXISTS application_forms (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  asset_id uuid NOT NULL UNIQUE REFERENCES media_assets(id) ON DELETE CASCADE,
+  company_responsible varchar(120) NOT NULL,
+  municipal_registration varchar(60) NOT NULL,
+  property_registration varchar(60) NOT NULL,
+  street varchar(180) NOT NULL,
+  number varchar(30) NOT NULL,
+  district varchar(120) NOT NULL,
+  postal_code varchar(9) NOT NULL,
+  latitude double precision NOT NULL,
+  longitude double precision NOT NULL,
+  media_type varchar(32) NOT NULL,
+  area_m2 double precision NOT NULL,
+  bottom_height_m double precision NOT NULL,
+  requester_email varchar(160) NOT NULL,
+  attachment_links text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT ck_application_forms_media_type CHECK (
+    media_type IN ('outdoor', 'front light', 'triface', 'painel de led', 'painel eletronico modular', 'empena', 'empena de led')
+  ),
+  CONSTRAINT ck_application_forms_latitude CHECK (latitude BETWEEN -90 AND 90),
+  CONSTRAINT ck_application_forms_longitude CHECK (longitude BETWEEN -180 AND 180),
+  CONSTRAINT ck_application_forms_area CHECK (area_m2 > 0),
+  CONSTRAINT ck_application_forms_bottom_height CHECK (bottom_height_m >= 0)
+);
+
+CREATE INDEX IF NOT EXISTS ix_application_forms_asset_id ON application_forms (asset_id);
+CREATE INDEX IF NOT EXISTS ix_application_forms_company ON application_forms (company_responsible);
+CREATE INDEX IF NOT EXISTS ix_application_forms_municipal_registration ON application_forms (municipal_registration);
 
 CREATE TABLE IF NOT EXISTS activity_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,5 +166,11 @@ EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS trg_media_rules_updated_at ON media_rules;
 CREATE TRIGGER trg_media_rules_updated_at
 BEFORE UPDATE ON media_rules
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_application_forms_updated_at ON application_forms;
+CREATE TRIGGER trg_application_forms_updated_at
+BEFORE UPDATE ON application_forms
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();

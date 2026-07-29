@@ -7,11 +7,12 @@ INSERT INTO media_rules (
   description
 ) VALUES
   ('outdoor', 'Outdoor', 80, NULL, NULL, 'Distancia minima para veiculos do tipo outdoor.'),
-  ('front light', 'Front Light', 80, NULL, NULL, 'Distancia minima para veiculos front light.'),
-  ('triface', 'Triface', 80, NULL, NULL, 'Distancia minima para veiculos triface.'),
-  ('painel de led', 'Painel de LED', 250, 5, 1000, 'Acima de 5 m2 aplica-se o raio ampliado.'),
+  ('front light', 'Painel Iluminado - Front Light', 80, NULL, NULL, 'Distancia minima para paineis iluminados do tipo Front Light.'),
+  ('triface', 'Painel Iluminado - Triface', 80, NULL, NULL, 'Distancia minima para paineis iluminados do tipo Triface.'),
+  ('painel de led', 'Painel Eletrônico Modular - Pequeno Porte', 250, 5, 1000, 'Acima de 5 m2 aplica-se o raio ampliado.'),
+  ('painel eletronico modular', 'Painel Eletrônico Modular', 1000, NULL, NULL, 'Distancia minima de 1000 m para paineis eletronicos modulares.'),
   ('empena', 'Empena', 80, NULL, NULL, 'Distancia minima para empenas.'),
-  ('empena de led', 'Empena de LED', 1000, NULL, NULL, 'Distancia minima para empenas de LED.')
+  ('empena de led', 'Empena Eletrônica', 1000, NULL, NULL, 'Distancia minima para empenas eletronicas.')
 ON CONFLICT (media_type) DO NOTHING;
 
 INSERT INTO media_assets (
@@ -63,7 +64,7 @@ INSERT INTO media_assets (
     NULL,
     1000,
     'aprovado',
-    'Grande porte de LED aprovado em via de trafego rapido.',
+    'Painel Eletrônico Modular - Pequeno Porte aprovado em via de trafego rapido.',
     'Fernando Silva',
     'fernando@ledtech.com.br',
     '2026-06-20T14:15:00Z'
