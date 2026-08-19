@@ -98,3 +98,81 @@ O endpoint de análise retorna todos os conflitos encontrados, ordenados por dis
 - Use `/health/live` para liveness e `/health/ready` para readiness.
 
 `backend` e `frontend` são submódulos Git; clone o projeto com `git clone --recurse-submodules` ou execute `git submodule update --init --recursive`.
+
+## Deploy com Supabase e Vercel
+
+A implantação recomendada usa três componentes independentes:
+
+- Supabase: PostgreSQL com PostGIS.
+- Vercel `geomidia-api`: backend FastAPI, com raiz em `backend`.
+- Vercel `geomidia-web`: frontend Vue/Vite, com raiz em `frontend`.
+
+### 1. Preparar o Supabase
+
+Habilite `postgis` e `pgcrypto` em **Database > Extensions**. Antes da primeira migração, confirme no SQL Editor:
+
+```sql
+select extension.extname, namespace.nspname as schema_name
+from pg_extension extension
+join pg_namespace namespace on namespace.oid = extension.extnamespace
+where extension.extname in ('postgis', 'pgcrypto');
+```
+
+As migrações detectam o schema do PostGIS e configuram o `search_path` da conexão da aplicação. Elas também habilitam RLS e removem os privilégios de `anon` e `authenticated` nas tabelas do GeoMídia. O frontend nunca deve receber a senha do banco nem a chave `service_role`.
+
+No painel **Connect**, copie:
+
+- **Transaction pooler**, porta `6543`: tráfego do FastAPI na Vercel.
+- **Direct connection** ou **Session pooler**, porta `5432`: Alembic e provisionamento.
+
+Use o Session pooler para a migração quando o executor não possuir conectividade IPv6.
+
+### 2. Migrar e criar o primeiro administrador
+
+Cadastre estes secrets no ambiente `production` do GitHub:
+
+- `SUPABASE_MIGRATION_DATABASE_URL`: URL direta ou Session pooler, nunca a porta `6543`.
+- `BOOTSTRAP_ADMIN_PASSWORD`: senha com pelo menos 12 caracteres.
+
+Execute manualmente o workflow **Provision Supabase**. Ele roda, nesta ordem:
+
+```bash
+alembic upgrade head
+python -m app.cli bootstrap-admin
+```
+
+O comando do administrador é idempotente e não altera uma conta que já exista. Para executar localmente, configure `DATABASE_DIRECT_URL`, `BOOTSTRAP_ADMIN_USERNAME` e `BOOTSTRAP_ADMIN_PASSWORD` antes dos dois comandos.
+
+### 3. Publicar o backend
+
+Crie um projeto Vercel com **Root Directory** igual a `backend`. O entrypoint FastAPI está configurado no `pyproject.toml`. Cadastre:
+
+```env
+DATABASE_URL=postgresql://postgres.PROJECT_REF:SENHA@HOST.pooler.supabase.com:6543/postgres
+ENVIRONMENT=production
+CREATE_TABLES=false
+JWT_SECRET=uma-chave-aleatoria-com-pelo-menos-32-caracteres
+CORS_ORIGINS=https://URL-DO-FRONTEND.vercel.app
+```
+
+Não configure `DATABASE_DIRECT_URL` na aplicação Vercel. Essa credencial é exclusiva para migrações e administração. O backend detecta a porta `6543`, desativa prepared statements e deixa o Supavisor gerenciar as conexões.
+
+Depois do deploy, valide:
+
+```text
+https://URL-DA-API.vercel.app/health/live
+https://URL-DA-API.vercel.app/health/ready
+https://URL-DA-API.vercel.app/docs
+```
+
+### 4. Publicar o frontend
+
+Crie outro projeto Vercel com **Root Directory** igual a `frontend` e configure:
+
+```env
+VITE_API_BASE_URL=https://URL-DA-API.vercel.app/api
+```
+
+O `vercel.json` do frontend encaminha as rotas da SPA para `index.html`. Depois que a URL final do frontend existir, atualize `CORS_ORIGINS` no projeto do backend e faça um novo deploy da API.
+
+Como `backend` e `frontend` são submódulos, suas alterações precisam ser publicadas nos respectivos repositórios e os ponteiros do repositório principal precisam ser atualizados antes do deploy pelo Git.
