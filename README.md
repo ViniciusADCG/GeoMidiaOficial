@@ -13,6 +13,7 @@ Principais recursos:
 - dashboard com indicadores agregados;
 - mapa interativo com Leaflet;
 - inventário pesquisável e paginado;
+- fila inicial de novos processos com início de análise explícito;
 - cadastro e acompanhamento de formulários/processos;
 - análise espacial com PostgreSQL/PostGIS;
 - regras territoriais administráveis;
@@ -183,10 +184,10 @@ Exemplo: `PROC-2026-101`.
 Situações aceitas:
 
 ```text
-aprovado, irregular, análise, exigência, vencido, cartografia, jurídico, vistoria
+novos processos, análise, aprovado, irregular, exigência, vencido, cartografia, jurídico, vistoria
 ```
 
-Novos processos sempre começam em `análise`.
+Novos pontos, processos e formulários sempre começam em `novos processos`. Esse status não pode ser selecionado novamente nem trocado por uma atualização comum. Um `analyst` ou `admin` deve usar a ação **Iniciar Análise**, que move o processo para `análise` e libera as demais situações.
 
 ## Regras territoriais
 
@@ -217,10 +218,12 @@ Comportamento da análise:
 1. Um `analyst` ou `admin` cadastra diretamente uma mídia ou preenche um formulário.
 2. O backend gera o código anual do processo de forma atômica.
 3. A regra ativa determina o raio territorial persistido.
-4. O processo começa em `análise`.
-5. Alterações geram registros em `activity_logs`.
-6. Ao tentar aprovar, o backend executa novamente a análise dentro da mesma transação.
-7. Sem conflitos, a aprovação é confirmada; com conflitos, a transação é rejeitada.
+4. O processo começa em `novos processos`.
+5. Um `analyst` ou `admin` usa a ação dedicada **Iniciar Análise**.
+6. O backend muda o status para `análise`, registra a atividade e libera a tramitação.
+7. Alterações posteriores geram registros em `activity_logs`.
+8. Ao tentar aprovar, o backend executa novamente a análise dentro da mesma transação.
+9. Sem conflitos, a aprovação é confirmada; com conflitos, a transação é rejeitada.
 
 ## API
 
@@ -231,6 +234,7 @@ Em desenvolvimento, a documentação interativa fica em `http://localhost:8000/d
 | `POST /api/auth/login` | Autenticação e emissão do JWT |
 | `GET /api/auth/me` | Usuário autenticado |
 | `/api/media-assets` | Listagem, indicadores, detalhe, análise, cadastro, edição e exclusão |
+| `POST /api/media-assets/{id}/start-analysis` | Inicia formalmente a análise de um novo processo |
 | `/api/application-forms` | Listagem, detalhe, cadastro, edição e exclusão de formulários |
 | `/api/activities` | Histórico paginado |
 | `/api/media-rules` | Consulta e administração das regras |
