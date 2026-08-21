@@ -164,7 +164,7 @@ Todas as tabelas da aplicação usam explicitamente o schema `public`.
 | Tabela | Finalidade |
 | --- | --- |
 | `users` | Usuários, perfis, hashes de senha e estado ativo |
-| `media_assets` | Processos, dados da mídia, coordenadas, geometria e situação |
+| `media_assets` | Processos, dados da mídia, coordenadas, geometria, vencimento da autorização e situação |
 | `media_rules` | Regras de raio por tipo de mídia |
 | `application_forms` | Formulários vinculados individualmente a um processo |
 | `activity_logs` | Auditoria de cadastros, edições, aprovações, irregularidades e exclusões |
@@ -172,6 +172,8 @@ Todas as tabelas da aplicação usam explicitamente o schema `public`.
 | `alembic_version` | Revisão atual do schema |
 
 `media_assets.geom` é um ponto PostGIS SRID 4326 gerado a partir de latitude e longitude. O índice GiST acelera a busca espacial.
+
+`media_assets.expiration_date` armazena opcionalmente a data de vencimento da autorização, sem componente de horário. O campo possui índice para consultas futuras de autorizações vencidas e próximas do vencimento.
 
 Os códigos seguem o formato:
 
