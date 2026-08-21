@@ -10,7 +10,7 @@ O GeoMídia permite cadastrar processos de mídia exterior, visualizar sua distr
 
 Principais recursos:
 
-- dashboard com indicadores separados de total de ativos, novos processos, processos em análise, autorizados e irregulares;
+- dashboard com indicadores de fluxo, próximos vencimentos em 90 dias e autorizações vencidas;
 - mapa interativo com Leaflet;
 - inventário pesquisável e paginado;
 - fila inicial de novos processos com início de análise explícito;
@@ -127,6 +127,7 @@ GeoMidiaOficial/
 | `/` | Dashboard | Usuários autenticados |
 | `/mapa` | Mapa das mídias | Usuários autenticados |
 | `/inventario` | Inventário e análise | Usuários autenticados |
+| `/vencimentos` | Próximos ao vencimento e vencidos | Usuários autenticados |
 | `/formularios` | Formulários de requerimento | `analyst` e `admin` |
 | `/usuarios` | Administração de usuários | `admin` |
 | `/regras` | Administração das regras territoriais | `admin` |
@@ -137,7 +138,7 @@ O sistema não usa Supabase Auth. Usuários, senhas e sessões são controlados 
 
 | Perfil | Permissões principais |
 | --- | --- |
-| `viewer` | Consultar dashboard, inventário, mapa, análises, regras e atividades |
+| `viewer` | Consultar dashboard, inventário, mapa, vencimentos, análises, regras e atividades |
 | `analyst` | Tudo de `viewer`, além de cadastrar, editar e tramitar processos e formulários |
 | `admin` | Tudo de `analyst`, além de excluir registros, gerenciar usuários e regras |
 
@@ -173,7 +174,7 @@ Todas as tabelas da aplicação usam explicitamente o schema `public`.
 
 `media_assets.geom` é um ponto PostGIS SRID 4326 gerado a partir de latitude e longitude. O índice GiST acelera a busca espacial.
 
-`media_assets.expiration_date` armazena opcionalmente a data de vencimento da autorização, sem componente de horário. O campo possui índice para consultas futuras de autorizações vencidas e próximas do vencimento.
+`media_assets.expiration_date` armazena opcionalmente a data de vencimento da autorização, sem componente de horário. O campo possui índice para listar autorizações vencidas e as que vencerão nos próximos 90 dias. A janela inclui o dia atual e o nonagésimo dia; datas anteriores ao dia atual são consideradas vencidas.
 
 Os códigos seguem o formato:
 
@@ -236,6 +237,7 @@ Em desenvolvimento, a documentação interativa fica em `http://localhost:8000/d
 | `POST /api/auth/login` | Autenticação e emissão do JWT |
 | `GET /api/auth/me` | Usuário autenticado |
 | `/api/media-assets` | Listagem, indicadores, detalhe, análise, cadastro, edição e exclusão |
+| `GET /api/media-assets/expirations` | Listas completas de próximos vencimentos e vencidos |
 | `POST /api/media-assets/{id}/start-analysis` | Inicia formalmente a análise de um novo processo |
 | `/api/application-forms` | Listagem, detalhe, cadastro, edição e exclusão de formulários |
 | `/api/activities` | Histórico paginado |
