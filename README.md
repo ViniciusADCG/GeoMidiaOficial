@@ -10,7 +10,7 @@ O GeoMídia permite cadastrar processos de mídia exterior, visualizar sua distr
 
 Principais recursos:
 
-- dashboard com indicadores agregados;
+- dashboard com indicadores separados de total de ativos, novos processos, processos em análise, autorizados e irregulares;
 - mapa interativo com Leaflet;
 - inventário pesquisável e paginado;
 - fila inicial de novos processos com início de análise explícito;
